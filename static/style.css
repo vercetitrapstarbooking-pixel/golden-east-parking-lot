@@ -1,0 +1,35 @@
+body {
+    margin: 0;
+    overflow: hidden;
+    background: black;
+}
+
+#stage {
+    position: relative;
+    width: 100vw;
+    height: 100vh;
+}
+
+#stage-bg {
+    position: absolute;
+    width: 100%;
+    height: 100%;
+    z-index: 1;
+}
+
+/* Shared properties for all game entities */
+.entity {
+    position: absolute;
+    height: auto;
+    z-index: 2;
+}
+
+/* 🚗 Car size (adjust freely) */
+#car {
+    width: 370px;   /* make the Lambo big */
+}
+
+/* 🧍 Character size (adjust separately) */
+#character {
+    width: 70px;    /* smaller character */
+}
