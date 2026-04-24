@@ -1,35 +1,51 @@
 body {
     margin: 0;
+    padding: 0;
     overflow: hidden;
-    background: black;
+    background: black; /* This keeps the borders dark */
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    height: 100vh;
 }
 
 #stage {
     position: relative;
-    width: 100vw;
-    height: 100vh;
+    width: 1000px;  /* Match this to the actual width of your stage_.gif */
+    height: 600px; /* Match this to the actual height of your stage_.gif */
+    background: #000;
+    overflow: hidden;
+    border: 2px solid #edb458; /* Optional: Adds a luxury gold border to your game window */
 }
 
 #stage-bg {
     position: absolute;
+    top: 0;
+    left: 0;
     width: 100%;
     height: 100%;
-    z-index: 1;
+    z-index: 1; /* Beach stays at the very bottom */
+    object-fit: cover; /* Ensures the GIF fills the box without distorting */
 }
 
-/* Shared properties for all game entities */
 .entity {
     position: absolute;
-    height: auto;
-    z-index: 2;
+    z-index: 10; /* Put cars and people ABOVE the beach */
+    transform: translate(-50%, -50%); /* Centers the image on its X/Y coordinates */
 }
 
-/* 🚗 Car size (adjust freely) */
 #car {
-    width: 370px;   /* make the Lambo big */
+    width: 370px;
 }
 
-/* 🧍 Character size (adjust separately) */
 #character {
-    width: 70px;    /* smaller character */
+    width: 70px;
+}
+
+/* Ensure the chat stays inside the beach area */
+#chat-container {
+    position: absolute;
+    bottom: 20px;
+    left: 20px;
+    z-index: 999;
 }
