@@ -8,6 +8,11 @@ const chatContainer = document.getElementById("chat-container");
 const chatInput = document.getElementById("chat-input");
 const chatBox = document.getElementById("chat-box");
 
+// Login Elements
+const loginOverlay = document.getElementById("login-overlay");
+const usernameInput = document.getElementById("username-input");
+const joinBtn = document.getElementById("join-btn");
+
 let socket;
 if (typeof io !== 'undefined') {
     socket = io();
@@ -18,6 +23,7 @@ if (typeof io !== 'undefined') {
 // -----------------------------
 // STATE
 // -----------------------------
+let username = "Guest"; // Default name
 let carX = 500, carY = 300, carSpeed = 2;
 let charX = 0, charY = 0, charSpeed = 2, charFrame = 1, charDir = "down", charVisible = false;
 let mode = "car"; 
@@ -25,9 +31,26 @@ let isChatting = false;
 const keys = {};
 
 // -----------------------------
+// LOGIN LOGIC
+// -----------------------------
+joinBtn.addEventListener("click", () => {
+    const nameValue = usernameInput.value.trim();
+    if (nameValue !== "") {
+        username = nameValue; // Set the global username
+        loginOverlay.style.display = "none"; // Hide login screen
+        console.log("Logged in as:", username);
+    } else {
+        alert("Please enter a name to join the chat.");
+    }
+});
+
+// -----------------------------
 // INPUT LISTENERS
 // -----------------------------
 document.addEventListener("keydown", e => {
+    // Prevent movement if typing in login or chat
+    if (document.activeElement === usernameInput) return;
+
     keys[e.key] = true;
 
     // CHAT TOGGLES
@@ -50,7 +73,7 @@ document.addEventListener("keydown", e => {
 document.addEventListener("keyup", e => keys[e.key] = false);
 
 // -----------------------------
-// CHAT LOGIC (STAY OPEN FIX APPLIED)
+// CHAT LOGIC
 // -----------------------------
 chatInput.addEventListener("focus", () => { isChatting = true; });
 chatInput.addEventListener("blur", () => { isChatting = false; });
@@ -60,23 +83,24 @@ chatInput.addEventListener("keydown", (e) => {
 
     if (e.key === "Enter") {
         if (chatInput.value.trim() !== "") {
-            if (socket) socket.emit('send_message', { text: chatInput.value });
+            // ATTACH NAME HERE: We send an object with 'user' and 'text'
+            if (socket) {
+                socket.emit('send_message', { 
+                    user: username, 
+                    text: chatInput.value 
+                });
+            }
             chatInput.value = "";
         }
-        
-        // RELEASES movement so you can drive immediately
         chatInput.blur(); 
-
-        // FIX: We removed "chatContainer.style.display = 'none'" from here.
-        // The box now stays visible on screen.
-        console.log("Message sent. HUD remains visible.");
     }
 });
 
 if (socket) {
     socket.on('receive_message', (data) => {
         const msg = document.createElement("div");
-        msg.innerHTML = `<strong>Player:</strong> ${data.text}`;
+        // DISPLAY NAME HERE: Uses the name sent from the server
+        msg.innerHTML = `<strong style="color: #edb458;">${data.user}:</strong> ${data.text}`;
         chatBox.appendChild(msg);
         chatBox.scrollTop = chatBox.scrollHeight;
     });
@@ -86,7 +110,7 @@ if (socket) {
 // GAME LOOP & MOVEMENT
 // -----------------------------
 function updateCar() {
-    if (isChatting) return;
+    if (isChatting || loginOverlay.style.display !== "none") return;
     if (keys["ArrowUp"]) { carY -= carSpeed; car.src = "/static/images/lamboup.png"; }
     if (keys["ArrowDown"]) { carY += carSpeed; car.src = "/static/images/lambodown.png"; }
     if (keys["ArrowLeft"]) { carX -= carSpeed; car.src = "/static/images/lamboleft.png"; }
@@ -96,7 +120,7 @@ function updateCar() {
 }
 
 function updateCharacter() {
-    if (isChatting) return;
+    if (isChatting || loginOverlay.style.display !== "none") return;
     let moved = false;
     if (keys["ArrowUp"]) { charY -= charSpeed; charDir = "up"; moved = true; }
     if (keys["ArrowDown"]) { charY += charSpeed; charDir = "down"; moved = true; }
