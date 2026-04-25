@@ -1,84 +1,123 @@
-// ELEMENTS
+// -----------------------------
+// ELEMENTS & INITIALIZATION
+// -----------------------------
 const car = document.getElementById("car");
 const character = document.getElementById("character");
 const bgm = document.getElementById("bgm");
-const loginOverlay = document.getElementById("login-overlay");
-const usernameInput = document.getElementById("username-input");
-const joinBtn = document.getElementById("join-btn");
 const chatContainer = document.getElementById("chat-container");
 const chatInput = document.getElementById("chat-input");
 const chatBox = document.getElementById("chat-box");
+const loginOverlay = document.getElementById("login-overlay");
+const usernameInput = document.getElementById("username-input");
+const joinBtn = document.getElementById("join-btn");
 
-let socket = io();
+let socket;
+if (typeof io !== 'undefined') { socket = io(); }
 
+// -----------------------------
 // STATE
-let username = "Guest";
+// -----------------------------
+let username = "Guest"; 
+let carX = 500, carY = 300, carSpeed = 2;
+let charX = 0, charY = 0, charSpeed = 2, charFrame = 1, charDir = "down", charVisible = false;
 let mode = "car"; 
-let isChatting = false;
-let carX = 500, carY = 300, carSpeed = 4;
-let charX = 0, charY = 0, charSpeed = 3, charDir = "down", charFrame = 1;
+let isChatting = false; 
 const keys = {};
 
+// -----------------------------
 // LOGIN LOGIC
-function handleLogin() {
-    const val = usernameInput.value.trim();
-    if (val !== "") {
-        username = val;
-        loginOverlay.style.display = "none";
-        bgm.play().catch(() => console.log("Music blocked. Check Site Settings for 'Insecure Content'"));
+// -----------------------------
+joinBtn.addEventListener("click", () => {
+    const nameValue = usernameInput.value.trim();
+    if (nameValue !== "") {
+        username = nameValue; 
+        loginOverlay.style.display = "none"; 
+        console.log("Logged in as:", username);
+        // Music no longer starts here automatically
+    } else {
+        alert("Please enter a name to join.");
     }
-}
-
-joinBtn.addEventListener("click", handleLogin);
-usernameInput.addEventListener("keydown", (e) => { if(e.key === "Enter") handleLogin(); });
-
-// CHAT LOGIC
-document.addEventListener("keydown", e => {
-    if (loginOverlay.style.display !== "none" && !isChatting) {
-        if (e.key === "0") { chatContainer.style.display = "flex"; chatInput.focus(); }
-        if (e.key === "9") { chatContainer.style.display = "none"; chatInput.blur(); }
-        if (e.key === "3") { mode = "character"; character.style.display = "block"; charX = carX + 50; charY = carY; }
-        if (e.key === "4") { mode = "car"; character.style.display = "none"; }
-    }
-    keys[e.key] = true;
 });
 
+// -----------------------------
+// INPUT LISTENERS
+// -----------------------------
+document.addEventListener("keydown", e => {
+    if (document.activeElement === usernameInput || isChatting) return;
+    keys[e.key] = true;
+
+    // --- MUSIC CONTROLS ---
+    // Press "1" to play local music.mp3
+    if (e.key === "1") { 
+        bgm.loop = true;
+        bgm.play().catch(err => console.log("Playback error:", err)); 
+    }
+    // Press "2" to pause the music
+    if (e.key === "2") { 
+        bgm.pause(); 
+    }
+
+    // --- INTERFACE CONTROLS ---
+    if (e.key === "0") { chatContainer.style.display = "flex"; chatInput.focus(); }
+    if (e.key === "9") { chatContainer.style.display = "none"; chatInput.blur(); }
+    
+    // --- MODE SWITCHING ---
+    if (e.key === "3") { mode = "character"; character.style.display = "block"; charX = carX + 130; charY = carY; }
+    if (e.key === "4") { mode = "car"; character.style.display = "none"; }
+});
 document.addEventListener("keyup", e => keys[e.key] = false);
 
-chatInput.addEventListener("focus", () => isChatting = true);
-chatInput.addEventListener("blur", () => isChatting = false);
-chatInput.addEventListener("keydown", e => {
+// -----------------------------
+// CHAT LOGIC
+// -----------------------------
+chatInput.addEventListener("focus", () => { isChatting = true; });
+chatInput.addEventListener("blur", () => { isChatting = false; });
+chatInput.addEventListener("keydown", (e) => {
+    e.stopPropagation(); 
     if (e.key === "Enter" && chatInput.value.trim() !== "") {
-        socket.emit('send_message', { user: username, text: chatInput.value });
+        if (socket) socket.emit('send_message', { user: username, text: chatInput.value });
         chatInput.value = "";
+        chatInput.blur();
     }
-    e.stopPropagation();
 });
 
-socket.on('receive_message', data => {
-    const msg = document.createElement("div");
-    msg.innerHTML = `<b style="color:#edb458">${data.user}:</b> ${data.text}`;
-    chatBox.appendChild(msg);
-    chatBox.scrollTop = chatBox.scrollHeight;
-});
-
-// GAME LOOP
-function update() {
-    if (loginOverlay.style.display === "none") {
-        if (mode === "car" && !isChatting) {
-            if (keys["ArrowUp"]) carY -= carSpeed;
-            if (keys["ArrowDown"]) carY += carSpeed;
-            if (keys["ArrowLeft"]) carX -= carSpeed;
-            if (keys["ArrowRight"]) carX += carSpeed;
-            car.style.left = carX + "px"; car.style.top = carY + "px";
-        } else if (mode === "character" && !isChatting) {
-            if (keys["ArrowUp"]) charY -= charSpeed;
-            if (keys["ArrowDown"]) charY += charSpeed;
-            if (keys["ArrowLeft"]) charX -= charSpeed;
-            if (keys["ArrowRight"]) charX += charSpeed;
-            character.style.left = charX + "px"; character.style.top = charY + "px";
-        }
-    }
-    requestAnimationFrame(update);
+if (socket) {
+    socket.on('receive_message', (data) => {
+        const msg = document.createElement("div");
+        msg.innerHTML = `<strong style="color: #edb458;">${data.user}:</strong> ${data.text}`;
+        chatBox.appendChild(msg);
+        chatBox.scrollTop = chatBox.scrollHeight;
+    });
 }
-update();
+
+// -----------------------------
+// GAME LOOP
+// -----------------------------
+function updateCar() {
+    if (loginOverlay.style.display !== "none") return;
+    if (keys["ArrowUp"]) { carY -= carSpeed; car.src = "/static/images/lamboup.png"; }
+    if (keys["ArrowDown"]) { carY += carSpeed; car.src = "/static/images/lambodown.png"; }
+    if (keys["ArrowLeft"]) { carX -= carSpeed; car.src = "/static/images/lamboleft.png"; }
+    if (keys["ArrowRight"]) { carX += carSpeed; car.src = "/static/images/lamboright.png"; }
+    car.style.left = carX + "px"; car.style.top = carY + "px";
+}
+
+function updateCharacter() {
+    if (loginOverlay.style.display !== "none") return;
+    let moved = false;
+    if (keys["ArrowUp"]) { charY -= charSpeed; charDir = "up"; moved = true; }
+    if (keys["ArrowDown"]) { charY += charSpeed; charDir = "down"; moved = true; }
+    if (keys["ArrowLeft"]) { charX -= charSpeed; charDir = "left"; moved = true; }
+    if (keys["ArrowRight"]) { charX += charSpeed; charDir = "right"; moved = true; }
+    if (moved) {
+        charFrame = (charFrame % 3) + 1;
+        character.src = `/static/images/character_${charDir}_${charFrame}.png`;
+    }
+    character.style.left = charX + "px"; character.style.top = charY + "px";
+}
+
+function loop() {
+    if (mode === "car") updateCar(); else updateCharacter();
+    requestAnimationFrame(loop);
+}
+loop();
