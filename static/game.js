@@ -26,7 +26,7 @@ if (typeof io !== 'undefined') {
 // -----------------------------
 // STATE
 // -----------------------------
-let username = "Guest"; // Default name
+let username = "Guest"; 
 let carX = 500, carY = 300, carSpeed = 2;
 let charX = 0, charY = 0, charSpeed = 2, charFrame = 1, charDir = "down", charVisible = false;
 let mode = "car"; 
@@ -52,7 +52,7 @@ joinBtn.addEventListener("click", () => {
 // -----------------------------
 document.addEventListener("keydown", e => {
     if (document.activeElement === usernameInput) return;
-    if (isChatting) return; // Don't trigger game keys while typing in chat
+    if (isChatting) return; 
 
     keys[e.key] = true;
 
@@ -66,23 +66,29 @@ document.addEventListener("keydown", e => {
         chatInput.blur();
     }
 
-    // MODE TOGGLES
-    if (e.key === "3") { mode = "character"; charVisible = true; character.style.display = "block"; charX = carX + 130; charY = carY; }
-    if (e.key === "4") { mode = "car"; charVisible = false; character.style.display = "none"; }
+    // MODE TOGGLES (3 = Person, 4 = Car)
+    if (e.key === "3") { 
+        mode = "character"; 
+        charVisible = true; 
+        character.style.display = "block"; 
+        charX = carX + 130; 
+        charY = carY; 
+    }
+    if (e.key === "4") { 
+        mode = "car"; 
+        charVisible = false; 
+        character.style.display = "none"; 
+    }
 
-    // RADIO CONTROLS
-    // Press R or 1 to Turn ON
+    // RADIO CONTROLS (R = ON, T = OFF)
     if (e.key.toLowerCase() === "r" || e.key === "1") {
         bgm.src = streamUrl; 
         bgm.load();
         bgm.play();
-        console.log("Radio Status: LIVE");
     }
-    // Press T or 2 to Turn OFF
     if (e.key.toLowerCase() === "t" || e.key === "2") {
         bgm.pause();
-        bgm.src = ""; // Stop data usage
-        console.log("Radio Status: OFF");
+        bgm.src = ""; 
     }
 });
 
@@ -96,7 +102,6 @@ chatInput.addEventListener("blur", () => { isChatting = false; });
 
 chatInput.addEventListener("keydown", (e) => {
     e.stopPropagation(); 
-
     if (e.key === "Enter") {
         if (chatInput.value.trim() !== "") {
             if (socket) {
@@ -136,4 +141,7 @@ function updateCar() {
 function updateCharacter() {
     if (isChatting || loginOverlay.style.display !== "none") return;
     let moved = false;
-    if (keys["ArrowUp"]) { charY -= char
+    
+    // Check direction keys
+    if (keys["ArrowUp"]) { charY -= charSpeed; charDir = "up"; moved = true; }
+    if (keys["ArrowDown"]) { charY += charSpeed; charDir = "down"; moved = true; }
