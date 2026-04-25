@@ -9,43 +9,32 @@
 <body>
 
 <div id="stage">
-    <div id="login-overlay" style="position: absolute; top: 0; left: 0; width: 100%; height: 100%; background: rgba(0, 0, 0, 0.9); display: flex; flex-direction: column; justify-content: center; align-items: center; z-index: 200000; font-family: 'Courier New', Courier, monospace; pointer-events: all;">
-        
-        <div style="text-align: center; border: 2px solid #edb458; padding: 40px; border-radius: 15px; background: #1a1a1a; box-shadow: 0 0 20px #edb458; position: relative; z-index: 200001; pointer-events: auto;">
-            <h1 style="color: #edb458; margin-bottom: 20px; letter-spacing: 2px;">GOLDEN EAST ACCESS</h1>
-            <p style="color: white; margin-bottom: 20px;">IDENTIFY FOR NETWORK CHAT</p>
-            
-            <input type="text" id="username-input" placeholder="ENTER NAME..." 
-                   style="padding: 12px; width: 250px; border: none; border-radius: 5px; font-size: 16px; margin-bottom: 15px; text-align: center; outline: none; position: relative; z-index: 200002;">
-            
-            <br>
-            
-            <button id="join-btn" 
-                    style="padding: 12px 30px; background: #edb458; color: black; border: none; border-radius: 5px; font-weight: bold; cursor: pointer; transition: 0.3s; width: 100%; position: relative; z-index: 200003; pointer-events: auto;">
-                ENTER THE BEACH
-            </button>
+    <div id="login-overlay">
+        <div class="login-box">
+            <h1>GOLDEN EAST ACCESS</h1>
+            <p>IDENTIFY FOR NETWORK CHAT</p>
+            <input type="text" id="username-input" placeholder="ENTER NAME..." maxlength="15">
+            <button id="join-btn">ENTER THE BEACH</button>
         </div>
     </div>
 
     <img src="/static/images/stage_.gif" id="stage-bg">
     <img id="car" class="entity" src="/static/images/lambodown.png">
-    <img id="character" class="entity" style="display:none;" src="/static/images/character_down_1.png">
+    <img id="character" class="entity" src="/static/images/character_down_1.png" style="display:none;">
 
-    <div id="chat-container" style="position: absolute; bottom: 20px; left: 20px; width: 300px; z-index: 9999; display: none; flex-direction: column;">
-        <div id="chat-box" style="height: 150px; background: rgba(0, 0, 0, 0.8); color: #00ff00; overflow-y: auto; padding: 10px; border: 2px solid #00ff00; font-family: monospace; margin-bottom: 5px; border-radius: 5px;">
+    <div id="chat-container">
+        <div id="chat-box">
             <div>System: Welcome to the private network.</div>
         </div>
-        <input type="text" id="chat-input" placeholder="Type message..." maxlength="50" 
-               style="width: 100%; padding: 10px; background: white; color: black; border: none; border-radius: 5px; box-sizing: border-box; outline: none;">
+        <input type="text" id="chat-input" placeholder="Type message..." maxlength="50">
     </div>
 
-    <audio id="bgm" crossorigin="anonymous">
+    <audio id="bgm" crossorigin="anonymous" loop>
         <source src="http://37.157.242.105:3847/;" type="audio/mpeg">
     </audio>
 </div>
 
 <script src="https://cdn.socket.io/4.7.2/socket.io.min.js"></script>
 <script src="/static/game.js"></script>
-
 </body>
 </html>

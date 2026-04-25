@@ -2,50 +2,83 @@ body {
     margin: 0;
     padding: 0;
     overflow: hidden;
-    background: black; /* This keeps the borders dark */
+    background: #000;
     display: flex;
     justify-content: center;
     align-items: center;
     height: 100vh;
+    font-family: 'Courier New', Courier, monospace;
 }
 
 #stage {
     position: relative;
-    width: 1000px;  /* Match this to the actual width of your stage_.gif */
-    height: 600px; /* Match this to the actual height of your stage_.gif */
-    background: #000;
+    width: 1000px;
+    height: 600px;
     overflow: hidden;
-    border: 2px solid #edb458; /* Optional: Adds a luxury gold border to your game window */
+    border: 2px solid #edb458;
 }
 
-#stage-bg {
+#login-overlay {
     position: absolute;
-    top: 0;
-    left: 0;
+    inset: 0;
+    background: rgba(0, 0, 0, 0.9);
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    z-index: 1000;
+}
+
+.login-box {
+    text-align: center;
+    border: 2px solid #edb458;
+    padding: 40px;
+    background: #1a1a1a;
+    box-shadow: 0 0 20px #edb458;
+}
+
+.login-box h1 { color: #edb458; margin-bottom: 20px; }
+.login-box p { color: white; }
+
+#username-input {
+    padding: 12px;
+    width: 250px;
+    text-align: center;
+    margin-bottom: 15px;
+    border-radius: 5px;
+    border: none;
+}
+
+#join-btn {
+    padding: 12px 30px;
+    background: #edb458;
+    font-weight: bold;
+    cursor: pointer;
     width: 100%;
-    height: 100%;
-    z-index: 1; /* Beach stays at the very bottom */
-    object-fit: cover; /* Ensures the GIF fills the box without distorting */
+    border-radius: 5px;
+    border: none;
 }
 
-.entity {
-    position: absolute;
-    z-index: 10; /* Put cars and people ABOVE the beach */
-    transform: translate(-50%, -50%); /* Centers the image on its X/Y coordinates */
-}
+#stage-bg { position: absolute; inset: 0; width: 100%; height: 100%; z-index: 1; object-fit: cover; }
+.entity { position: absolute; z-index: 10; transform: translate(-50%, -50%); }
+#car { width: 370px; }
+#character { width: 70px; }
 
-#car {
-    width: 370px;
-}
-
-#character {
-    width: 70px;
-}
-
-/* Ensure the chat stays inside the beach area */
 #chat-container {
     position: absolute;
     bottom: 20px;
     left: 20px;
-    z-index: 999;
+    width: 300px;
+    z-index: 500;
+    display: none;
+    flex-direction: column;
+}
+
+#chat-box {
+    height: 150px;
+    background: rgba(0, 0, 0, 0.8);
+    color: #00ff00;
+    overflow-y: auto;
+    padding: 10px;
+    border: 2px solid #00ff00;
+    margin-bottom: 5px;
 }
