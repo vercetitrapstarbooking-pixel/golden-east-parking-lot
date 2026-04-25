@@ -3,38 +3,42 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Golden East Parking Lot</title>
+    <title>Chat Arcadia</title>
     <link rel="stylesheet" href="/static/style.css">
 </head>
 <body>
 
-<div id="stage">
-    <div id="login-overlay">
-        <div class="login-box">
-            <h1>GOLDEN EAST ACCESS</h1>
-            <p>IDENTIFY FOR NETWORK CHAT</p>
-            <input type="text" id="username-input" placeholder="ENTER NAME..." maxlength="15">
-            <button id="join-btn">ENTER THE BEACH</button>
-        </div>
+    <div class="logo-container">
+        <img src="/static/images/logo.png" id="game-logo" alt="Chat Arcadia">
     </div>
 
-    <img src="/static/images/stage_.gif" id="stage-bg">
-    <img id="car" class="entity" src="/static/images/lambodown.png">
-    <img id="character" class="entity" src="/static/images/character_down_1.png" style="display:none;">
-
-    <div id="chat-container">
-        <div id="chat-box">
-            <div>System: Welcome to the private network.</div>
+    <div id="stage">
+        <div id="login-overlay">
+            <div class="login-box">
+                <h1>GOLDEN EAST ACCESS</h1>
+                <p>IDENTIFY FOR NETWORK CHAT</p>
+                <input type="text" id="username-input" placeholder="ENTER NAME..." maxlength="15">
+                <button id="join-btn">ENTER THE BEACH</button>
+            </div>
         </div>
-        <input type="text" id="chat-input" placeholder="Type message..." maxlength="50">
+
+        <img src="/static/images/stage_.gif" id="stage-bg">
+        <img id="car" class="entity" src="/static/images/lambodown.png">
+        <img id="character" class="entity" src="/static/images/character_down_1.png" style="display:none;">
+
+        <div id="chat-container">
+            <div id="chat-box">
+                <div>System: Welcome to the private network.</div>
+            </div>
+            <input type="text" id="chat-input" placeholder="Type message..." maxlength="50">
+        </div>
+
+        <audio id="bgm" crossorigin="anonymous" loop>
+            <source src="/static/music.mp3" type="audio/mpeg">
+        </audio>
     </div>
 
-    <audio id="bgm" crossorigin="anonymous" loop>
-        <source src="/static/music.mp3" type="audio/mpeg">
-    </audio>
-</div>
-
-<script src="https://cdn.socket.io/4.7.2/socket.io.min.js"></script>
-<script src="/static/game.js"></script>
+    <script src="https://cdn.socket.io/4.7.2/socket.io.min.js"></script>
+    <script src="/static/game.js"></script>
 </body>
 </html>
