@@ -1,4 +1,3 @@
-# CRITICAL: Monkey patch must happen BEFORE importing Flask or SocketIO
 import eventlet
 eventlet.monkey_patch()
 
