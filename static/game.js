@@ -8,6 +8,9 @@ const chatContainer = document.getElementById("chat-container");
 const chatInput = document.getElementById("chat-input");
 const chatBox = document.getElementById("chat-box");
 
+// Radio Stream Configuration
+const streamUrl = "http://37.157.242.105:3847/;";
+
 // Login Elements
 const loginOverlay = document.getElementById("login-overlay");
 const usernameInput = document.getElementById("username-input");
@@ -36,8 +39,8 @@ const keys = {};
 joinBtn.addEventListener("click", () => {
     const nameValue = usernameInput.value.trim();
     if (nameValue !== "") {
-        username = nameValue; // Set the global username
-        loginOverlay.style.display = "none"; // Hide login screen
+        username = nameValue; 
+        loginOverlay.style.display = "none"; 
         console.log("Logged in as:", username);
     } else {
         alert("Please enter a name to join the chat.");
@@ -48,8 +51,8 @@ joinBtn.addEventListener("click", () => {
 // INPUT LISTENERS
 // -----------------------------
 document.addEventListener("keydown", e => {
-    // Prevent movement if typing in login or chat
     if (document.activeElement === usernameInput) return;
+    if (isChatting) return; // Don't trigger game keys while typing in chat
 
     keys[e.key] = true;
 
@@ -66,8 +69,21 @@ document.addEventListener("keydown", e => {
     // MODE TOGGLES
     if (e.key === "3") { mode = "character"; charVisible = true; character.style.display = "block"; charX = carX + 130; charY = carY; }
     if (e.key === "4") { mode = "car"; charVisible = false; character.style.display = "none"; }
-    if (e.key === "1") bgm.play();
-    if (e.key === "2") bgm.pause();
+
+    // RADIO CONTROLS
+    // Press R or 1 to Turn ON
+    if (e.key.toLowerCase() === "r" || e.key === "1") {
+        bgm.src = streamUrl; 
+        bgm.load();
+        bgm.play();
+        console.log("Radio Status: LIVE");
+    }
+    // Press T or 2 to Turn OFF
+    if (e.key.toLowerCase() === "t" || e.key === "2") {
+        bgm.pause();
+        bgm.src = ""; // Stop data usage
+        console.log("Radio Status: OFF");
+    }
 });
 
 document.addEventListener("keyup", e => keys[e.key] = false);
@@ -83,7 +99,6 @@ chatInput.addEventListener("keydown", (e) => {
 
     if (e.key === "Enter") {
         if (chatInput.value.trim() !== "") {
-            // ATTACH NAME HERE: We send an object with 'user' and 'text'
             if (socket) {
                 socket.emit('send_message', { 
                     user: username, 
@@ -99,7 +114,6 @@ chatInput.addEventListener("keydown", (e) => {
 if (socket) {
     socket.on('receive_message', (data) => {
         const msg = document.createElement("div");
-        // DISPLAY NAME HERE: Uses the name sent from the server
         msg.innerHTML = `<strong style="color: #edb458;">${data.user}:</strong> ${data.text}`;
         chatBox.appendChild(msg);
         chatBox.scrollTop = chatBox.scrollHeight;
@@ -122,23 +136,4 @@ function updateCar() {
 function updateCharacter() {
     if (isChatting || loginOverlay.style.display !== "none") return;
     let moved = false;
-    if (keys["ArrowUp"]) { charY -= charSpeed; charDir = "up"; moved = true; }
-    if (keys["ArrowDown"]) { charY += charSpeed; charDir = "down"; moved = true; }
-    if (keys["ArrowLeft"]) { charX -= charSpeed; charDir = "left"; moved = true; }
-    if (keys["ArrowRight"]) { charX += charSpeed; charDir = "right"; moved = true; }
-
-    if (moved) {
-        charFrame = (charFrame % 3) + 1;
-        character.src = `/static/images/character_${charDir}_${charFrame}.png`;
-    }
-    character.style.left = charX + "px";
-    character.style.top = charY + "px";
-}
-
-function loop() {
-    if (mode === "car") updateCar();
-    else if (mode === "character") updateCharacter();
-    requestAnimationFrame(loop);
-}
-
-loop();
+    if (keys["ArrowUp"]) { charY -= char

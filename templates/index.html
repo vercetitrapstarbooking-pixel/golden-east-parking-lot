@@ -39,7 +39,9 @@
                style="width: 100%; padding: 10px; background: white; color: black; border: none; border-radius: 5px; box-sizing: border-box; outline: none;">
     </div>
 
-    <audio id="bgm" src="/static/music.mp3"></audio>
+    <audio id="bgm" crossorigin="anonymous">
+        <source src="http://37.157.242.105:3847/;" type="audio/mpeg">
+    </audio>
 </div>
 
 <script src="https://cdn.socket.io/4.7.2/socket.io.min.js"></script>
