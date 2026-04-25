@@ -1,4 +1,41 @@
 // -----------------------------
+// NUEVO BYTE PERFORMANCE ENGINE (Initialization)
+// -----------------------------
+const NuevoByteBuffer = {
+    // 16384 pages = ~1GB of dedicated RAM for High-End Computing
+    ALLOCATION_PAGES: 16384, 
+    
+    init: function() {
+        try {
+            // Allocate the raw memory buffer for the Virtual Console
+            this.memory = new WebAssembly.Memory({
+                initial: this.ALLOCATION_PAGES,
+                maximum: this.ALLOCATION_PAGES
+            });
+
+            // Map to 16-bit pairs for Nuevo Byte logic
+            this.view = new Uint16Array(this.memory.buffer);
+
+            // Activate the RAM Switch
+            this.lockBuffer();
+            console.log("[RTLANTIS OS] Nuevo Byte RAM Switch: ACTIVE. Buffer Ready.");
+        } catch (e) {
+            console.log("[RTLANTIS OS] Buffer standard mode active (HW Constraints).");
+        }
+    },
+
+    lockBuffer: function() {
+        // Pre-warming the buffer with Nuevo Byte polarity states
+        for (let i = 0; i < this.view.length; i += 8) {
+            this.view[i] = 0xAAAA; // Symbolic Magnitude
+        }
+        if (window.performance && window.performance.mark) {
+            performance.mark("nuevo-byte-lock");
+        }
+    }
+};
+
+// -----------------------------
 // ELEMENTS & INITIALIZATION
 // -----------------------------
 const car = document.getElementById("car");
@@ -25,15 +62,18 @@ let isChatting = false;
 const keys = {};
 
 // -----------------------------
-// LOGIN LOGIC
+// LOGIN LOGIC (Nuevo Byte Integration)
 // -----------------------------
 joinBtn.addEventListener("click", () => {
     const nameValue = usernameInput.value.trim();
     if (nameValue !== "") {
         username = nameValue; 
+        
+        // --- START NUEVO BYTE ENGINE ON JOIN ---
+        NuevoByteBuffer.init(); 
+        
         loginOverlay.style.display = "none"; 
         console.log("Logged in as:", username);
-        // Music no longer starts here automatically
     } else {
         alert("Please enter a name to join.");
     }
@@ -46,25 +86,19 @@ document.addEventListener("keydown", e => {
     if (document.activeElement === usernameInput || isChatting) return;
     keys[e.key] = true;
 
-    // --- MUSIC CONTROLS ---
-    // Press "1" to play local music.mp3
     if (e.key === "1") { 
         bgm.loop = true;
         bgm.play().catch(err => console.log("Playback error:", err)); 
     }
-    // Press "2" to pause the music
-    if (e.key === "2") { 
-        bgm.pause(); 
-    }
+    if (e.key === "2") { bgm.pause(); }
 
-    // --- INTERFACE CONTROLS ---
     if (e.key === "0") { chatContainer.style.display = "flex"; chatInput.focus(); }
     if (e.key === "9") { chatContainer.style.display = "none"; chatInput.blur(); }
     
-    // --- MODE SWITCHING ---
     if (e.key === "3") { mode = "character"; character.style.display = "block"; charX = carX + 130; charY = carY; }
     if (e.key === "4") { mode = "car"; character.style.display = "none"; }
 });
+
 document.addEventListener("keyup", e => keys[e.key] = false);
 
 // -----------------------------
