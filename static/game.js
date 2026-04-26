@@ -2,21 +2,15 @@
 // NUEVO BYTE PERFORMANCE ENGINE (Initialization)
 // -----------------------------
 const NuevoByteBuffer = {
-    // 16384 pages = ~1GB of dedicated RAM for High-End Computing
     ALLOCATION_PAGES: 16384, 
     
     init: function() {
         try {
-            // Allocate the raw memory buffer for the Virtual Console
             this.memory = new WebAssembly.Memory({
                 initial: this.ALLOCATION_PAGES,
                 maximum: this.ALLOCATION_PAGES
             });
-
-            // Map to 16-bit pairs for Nuevo Byte logic
             this.view = new Uint16Array(this.memory.buffer);
-
-            // Activate the RAM Switch
             this.lockBuffer();
             console.log("[RTLANTIS OS] Nuevo Byte RAM Switch: ACTIVE. Buffer Ready.");
         } catch (e) {
@@ -25,9 +19,8 @@ const NuevoByteBuffer = {
     },
 
     lockBuffer: function() {
-        // Pre-warming the buffer with Nuevo Byte polarity states
         for (let i = 0; i < this.view.length; i += 8) {
-            this.view[i] = 0xAAAA; // Symbolic Magnitude
+            this.view[i] = 0xAAAA; 
         }
         if (window.performance && window.performance.mark) {
             performance.mark("nuevo-byte-lock");
@@ -47,6 +40,10 @@ const chatBox = document.getElementById("chat-box");
 const loginOverlay = document.getElementById("login-overlay");
 const usernameInput = document.getElementById("username-input");
 const joinBtn = document.getElementById("join-btn");
+
+// Console Window Elements for NETSTAT
+const netstatWindow = document.getElementById("netstat-window");
+const ipList = document.getElementById("ip-list");
 
 let socket;
 if (typeof io !== 'undefined') { socket = io(); }
@@ -68,10 +65,13 @@ joinBtn.addEventListener("click", () => {
     const nameValue = usernameInput.value.trim();
     if (nameValue !== "") {
         username = nameValue; 
-        
-        // --- START NUEVO BYTE ENGINE ON JOIN ---
         NuevoByteBuffer.init(); 
         
+        // Notify server that Nuevo Byte is initialized for this user
+        if (socket) {
+            socket.emit('initialize_nuevo_byte', { user: username });
+        }
+
         loginOverlay.style.display = "none"; 
         console.log("Logged in as:", username);
     } else {
@@ -102,56 +102,37 @@ document.addEventListener("keydown", e => {
 document.addEventListener("keyup", e => keys[e.key] = false);
 
 // -----------------------------
-// CHAT LOGIC
+// CHAT & NETWORK LOGIC
 // -----------------------------
 chatInput.addEventListener("focus", () => { isChatting = true; });
 chatInput.addEventListener("blur", () => { isChatting = false; });
 chatInput.addEventListener("keydown", (e) => {
     e.stopPropagation(); 
     if (e.key === "Enter" && chatInput.value.trim() !== "") {
-        if (socket) socket.emit('send_message', { user: username, text: chatInput.value });
+        const text = chatInput.value;
+        if (socket) socket.emit('send_message', { user: username, text: text });
         chatInput.value = "";
         chatInput.blur();
     }
 });
 
 if (socket) {
+    // Listener for standard chat
     socket.on('receive_message', (data) => {
         const msg = document.createElement("div");
         msg.innerHTML = `<strong style="color: #edb458;">${data.user}:</strong> ${data.text}`;
         chatBox.appendChild(msg);
         chatBox.scrollTop = chatBox.scrollHeight;
     });
-}
 
-// -----------------------------
-// GAME LOOP
-// -----------------------------
-function updateCar() {
-    if (loginOverlay.style.display !== "none") return;
-    if (keys["ArrowUp"]) { carY -= carSpeed; car.src = "/static/images/lamboup.png"; }
-    if (keys["ArrowDown"]) { carY += carSpeed; car.src = "/static/images/lambodown.png"; }
-    if (keys["ArrowLeft"]) { carX -= carSpeed; car.src = "/static/images/lamboleft.png"; }
-    if (keys["ArrowRight"]) { carX += carSpeed; car.src = "/static/images/lamboright.png"; }
-    car.style.left = carX + "px"; car.style.top = carY + "px";
-}
+    // --- NUEVO BYTE NETSTAT LISTENER ---
+    socket.on('server_stats', (connections) => {
+        if (!netstatWindow || !ipList) return;
+        
+        ipList.innerHTML = ""; // Clear existing nodes
+        netstatWindow.style.display = "block"; // Pop up the red box
 
-function updateCharacter() {
-    if (loginOverlay.style.display !== "none") return;
-    let moved = false;
-    if (keys["ArrowUp"]) { charY -= charSpeed; charDir = "up"; moved = true; }
-    if (keys["ArrowDown"]) { charY += charSpeed; charDir = "down"; moved = true; }
-    if (keys["ArrowLeft"]) { charX -= charSpeed; charDir = "left"; moved = true; }
-    if (keys["ArrowRight"]) { charX += charSpeed; charDir = "right"; moved = true; }
-    if (moved) {
-        charFrame = (charFrame % 3) + 1;
-        character.src = `/static/images/character_${charDir}_${charFrame}.png`;
-    }
-    character.style.left = charX + "px"; character.style.top = charY + "px";
-}
-
-function loop() {
-    if (mode === "car") updateCar(); else updateCharacter();
-    requestAnimationFrame(loop);
-}
-loop();
+        connections.forEach(conn => {
+            const entry = document.createElement("div");
+            entry.style.marginBottom = "8px";
+            entry.style.borderLeft = "2px solid #00ff00";
