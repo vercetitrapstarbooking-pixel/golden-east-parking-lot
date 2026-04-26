@@ -20,9 +20,17 @@
     <div id="stage">
         
         <img src="/static/images/stage_.gif" id="stage-bg" alt="Beach Background">
-
         <img id="car" class="entity" src="/static/images/lambodown.png">
         <img id="character" class="entity" src="/static/images/character_down_1.png" style="display:none;">
+
+        <div id="netstat-window" style="display:none; position: absolute; top: 20px; right: 20px; width: 280px; background: rgba(0,0,0,0.9); border: 2px solid #ff0000; color: #00ff00; font-family: 'Courier New', monospace; padding: 15px; z-index: 1000; box-shadow: 0 0 20px rgba(255, 0, 0, 0.4);">
+            <div style="display: flex; justify-content: space-between; border-bottom: 1px solid #ff0000; margin-bottom: 10px; padding-bottom: 5px;">
+                <span style="color: #ff0000; font-weight: bold; font-size: 14px;">[ADMIN_CONSOLE]</span>
+                <span style="color: #ff0000; cursor: pointer; font-weight: bold;" onclick="document.getElementById('netstat-window').style.display='none'">[X]</span>
+            </div>
+            <div id="ip-list" style="max-height: 250px; overflow-y: auto; font-size: 11px; line-height: 1.4;">
+                </div>
+        </div>
 
         <div id="chat-container">
             <div id="chat-box">

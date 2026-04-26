@@ -1,9 +1,8 @@
 // -----------------------------
-// NUEVO BYTE PERFORMANCE ENGINE (Initialization)
+// NUEVO BYTE PERFORMANCE ENGINE
 // -----------------------------
 const NuevoByteBuffer = {
     ALLOCATION_PAGES: 16384, 
-    
     init: function() {
         try {
             this.memory = new WebAssembly.Memory({
@@ -12,18 +11,14 @@ const NuevoByteBuffer = {
             });
             this.view = new Uint16Array(this.memory.buffer);
             this.lockBuffer();
-            console.log("[RTLANTIS OS] Nuevo Byte RAM Switch: ACTIVE. Buffer Ready.");
+            console.log("[RTLANTIS OS] Nuevo Byte RAM Switch: ACTIVE.");
         } catch (e) {
-            console.log("[RTLANTIS OS] Buffer standard mode active (HW Constraints).");
+            console.log("[RTLANTIS OS] Buffer standard mode active.");
         }
     },
-
     lockBuffer: function() {
         for (let i = 0; i < this.view.length; i += 8) {
             this.view[i] = 0xAAAA; 
-        }
-        if (window.performance && window.performance.mark) {
-            performance.mark("nuevo-byte-lock");
         }
     }
 };
@@ -41,6 +36,7 @@ const loginOverlay = document.getElementById("login-overlay");
 const usernameInput = document.getElementById("username-input");
 const joinBtn = document.getElementById("join-btn");
 
+// Console Window Elements
 const netstatWindow = document.getElementById("netstat-window");
 const ipList = document.getElementById("ip-list");
 
@@ -51,14 +47,14 @@ if (typeof io !== 'undefined') { socket = io(); }
 // STATE
 // -----------------------------
 let username = "Guest"; 
-let carX = 500, carY = 300, carSpeed = 2;
-let charX = 0, charY = 0, charSpeed = 2, charFrame = 1, charDir = "down", charVisible = false;
+let carX = 500, carY = 300, carSpeed = 4; // Increased speed for better performance
+let charX = 0, charY = 0, charSpeed = 3, charFrame = 1, charDir = "down";
 let mode = "car"; 
 let isChatting = false; 
 const keys = {};
 
 // -----------------------------
-// LOGIN LOGIC
+// LOGIN & ENGINE ACTIVATION
 // -----------------------------
 joinBtn.addEventListener("click", () => {
     const nameValue = usernameInput.value.trim();
@@ -70,10 +66,11 @@ joinBtn.addEventListener("click", () => {
             socket.emit('initialize_nuevo_byte', { user: username });
         }
 
+        // Hiding the overlay wakes up the game loop
         loginOverlay.style.display = "none"; 
-        console.log("Logged in as:", username);
+        console.log("System Authorized. Welcome, ", username);
     } else {
-        alert("Please enter a name to join.");
+        alert("Please identify to access the network.");
     }
 });
 
@@ -84,40 +81,34 @@ document.addEventListener("keydown", e => {
     if (document.activeElement === usernameInput || isChatting) return;
     keys[e.key] = true;
 
-    if (e.key === "1") { 
-        bgm.loop = true;
-        bgm.play().catch(err => console.log("Playback error:", err)); 
-    }
+    if (e.key === "1") { bgm.play().catch(e => console.log(e)); }
     if (e.key === "2") { bgm.pause(); }
-
     if (e.key === "0") { chatContainer.style.display = "flex"; chatInput.focus(); }
     if (e.key === "9") { chatContainer.style.display = "none"; chatInput.blur(); }
     
-    if (e.key === "3") { mode = "character"; character.style.display = "block"; charX = carX + 130; charY = carY; }
+    if (e.key === "3") { mode = "character"; character.style.display = "block"; charX = carX + 50; charY = carY; }
     if (e.key === "4") { mode = "car"; character.style.display = "none"; }
 });
 
 document.addEventListener("keyup", e => keys[e.key] = false);
 
 // -----------------------------
-// CHAT & NETWORK LOGIC (FIXED)
+// CHAT & NETSTAT LOGIC
 // -----------------------------
 chatInput.addEventListener("focus", () => { isChatting = true; });
 chatInput.addEventListener("blur", () => { isChatting = false; });
 
 chatInput.addEventListener("keydown", (e) => {
     if (e.key === "Enter") {
-        e.preventDefault(); // STOP BROWSER RESET
+        e.preventDefault();
         const text = chatInput.value.trim();
         
         if (text !== "") {
             if (socket) {
-                console.log("Transmitting to Atlantis:", text);
                 socket.emit('send_message', { user: username, text: text });
             }
             chatInput.value = "";
             chatInput.blur();
-            isChatting = false;
         }
     }
 });
@@ -130,20 +121,51 @@ if (socket) {
         chatBox.scrollTop = chatBox.scrollHeight;
     });
 
+    // Handle the Netstat Window response
     socket.on('server_stats', (connections) => {
         if (!netstatWindow || !ipList) return;
         ipList.innerHTML = "";
-        netstatWindow.style.display = "block";
+        netstatWindow.style.display = "block"; // Make the window pop up
 
         connections.forEach(conn => {
             const entry = document.createElement("div");
-            entry.style.marginBottom = "8px";
-            entry.style.borderLeft = "2px solid #00ff00";
-            entry.style.paddingLeft = "5px";
+            entry.style.padding = "5px";
+            entry.style.borderBottom = "1px solid #333";
             const maskedIP = conn.ip.replace(/\d+$/, "xxx");
-            entry.innerHTML = `<span style="color: #ff0000;">[NODE]</span> ${conn.user}: ${maskedIP}`;
+            entry.innerHTML = `<span style="color: #ff0000;">[NODE]</span> ${conn.user} <br> <span style="color: #666;">${maskedIP}</span>`;
             ipList.appendChild(entry);
         });
     });
 }
 
+// -----------------------------
+// UPDATED GAME LOOP
+// -----------------------------
+function loop() {
+    // FIX: Only run if the login screen is GONE
+    if (loginOverlay.style.display === "none") {
+        if (mode === "car") {
+            if (keys["ArrowUp"]) { carY -= carSpeed; car.src = "/static/images/lamboup.png"; }
+            if (keys["ArrowDown"]) { carY += carSpeed; car.src = "/static/images/lambodown.png"; }
+            if (keys["ArrowLeft"]) { carX -= carSpeed; car.src = "/static/images/lamboleft.png"; }
+            if (keys["ArrowRight"]) { carX += carSpeed; car.src = "/static/images/lamboright.png"; }
+            car.style.left = carX + "px"; 
+            car.style.top = carY + "px";
+        } else {
+            let moved = false;
+            if (keys["ArrowUp"]) { charY -= charSpeed; charDir = "up"; moved = true; }
+            if (keys["ArrowDown"]) { charY += charSpeed; charDir = "down"; moved = true; }
+            if (keys["ArrowLeft"]) { charX -= charSpeed; charDir = "left"; moved = true; }
+            if (keys["ArrowRight"]) { charX += charSpeed; charDir = "right"; moved = true; }
+            if (moved) {
+                charFrame = (charFrame % 3) + 1;
+                character.src = `/static/images/character_${charDir}_${charFrame}.png`;
+            }
+            character.style.left = charX + "px"; 
+            character.style.top = charY + "px";
+        }
+    }
+    requestAnimationFrame(loop);
+}
+
+loop();
