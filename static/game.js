@@ -41,7 +41,6 @@ const loginOverlay = document.getElementById("login-overlay");
 const usernameInput = document.getElementById("username-input");
 const joinBtn = document.getElementById("join-btn");
 
-// Console Window Elements for NETSTAT
 const netstatWindow = document.getElementById("netstat-window");
 const ipList = document.getElementById("ip-list");
 
@@ -59,7 +58,7 @@ let isChatting = false;
 const keys = {};
 
 // -----------------------------
-// LOGIN LOGIC (Nuevo Byte Integration)
+// LOGIN LOGIC
 // -----------------------------
 joinBtn.addEventListener("click", () => {
     const nameValue = usernameInput.value.trim();
@@ -67,7 +66,6 @@ joinBtn.addEventListener("click", () => {
         username = nameValue; 
         NuevoByteBuffer.init(); 
         
-        // Notify server that Nuevo Byte is initialized for this user
         if (socket) {
             socket.emit('initialize_nuevo_byte', { user: username });
         }
@@ -102,22 +100,29 @@ document.addEventListener("keydown", e => {
 document.addEventListener("keyup", e => keys[e.key] = false);
 
 // -----------------------------
-// CHAT & NETWORK LOGIC
+// CHAT & NETWORK LOGIC (FIXED)
 // -----------------------------
 chatInput.addEventListener("focus", () => { isChatting = true; });
 chatInput.addEventListener("blur", () => { isChatting = false; });
+
 chatInput.addEventListener("keydown", (e) => {
-    e.stopPropagation(); 
-    if (e.key === "Enter" && chatInput.value.trim() !== "") {
-        const text = chatInput.value;
-        if (socket) socket.emit('send_message', { user: username, text: text });
-        chatInput.value = "";
-        chatInput.blur();
+    if (e.key === "Enter") {
+        e.preventDefault(); // STOP BROWSER RESET
+        const text = chatInput.value.trim();
+        
+        if (text !== "") {
+            if (socket) {
+                console.log("Transmitting to Atlantis:", text);
+                socket.emit('send_message', { user: username, text: text });
+            }
+            chatInput.value = "";
+            chatInput.blur();
+            isChatting = false;
+        }
     }
 });
 
 if (socket) {
-    // Listener for standard chat
     socket.on('receive_message', (data) => {
         const msg = document.createElement("div");
         msg.innerHTML = `<strong style="color: #edb458;">${data.user}:</strong> ${data.text}`;
@@ -125,14 +130,21 @@ if (socket) {
         chatBox.scrollTop = chatBox.scrollHeight;
     });
 
-    // --- NUEVO BYTE NETSTAT LISTENER ---
     socket.on('server_stats', (connections) => {
         if (!netstatWindow || !ipList) return;
-        
-        ipList.innerHTML = ""; // Clear existing nodes
-        netstatWindow.style.display = "block"; // Pop up the red box
+        ipList.innerHTML = "";
+        netstatWindow.style.display = "block";
 
         connections.forEach(conn => {
             const entry = document.createElement("div");
             entry.style.marginBottom = "8px";
             entry.style.borderLeft = "2px solid #00ff00";
+            entry.style.paddingLeft = "5px";
+            const maskedIP = conn.ip.replace(/\d+$/, "xxx");
+            entry.innerHTML = `<span style="color: #ff0000;">[NODE]</span> ${conn.user}: ${maskedIP}`;
+            ipList.appendChild(entry);
+        });
+    });
+}
+
+//
